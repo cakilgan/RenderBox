@@ -203,7 +203,7 @@ public:
 };
 
 int main(int* argc,char* argv) {
-    Cube3D Pong;
-    Pong.start();
+    Cube3D cube3D;
+    cube3D.start();
     return 0;
 }
