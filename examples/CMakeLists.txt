@@ -7,7 +7,7 @@ foreach(example_file ${EXAMPLES})
 
     # Hedefi ekle
     add_executable(${example_name} ${example_file}
-    )
+     )
 
     # Bağlantı kütüphanelerini ekle
     target_link_libraries(${example_name} glfw glad glm core)

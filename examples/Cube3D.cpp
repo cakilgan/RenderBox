@@ -4,7 +4,6 @@
 #include <source/Shader.h>
 #include <source/Texture.h>
 #include <source/Camera.h>
-
 const char* VERTEX_SHADER = R"(
 #version 330 core
 layout(location = 0) in vec3 position;
@@ -74,14 +73,14 @@ GLuint indices[] = {
 };
 
 
-class TestApp1 : public Application {
+class Cube3D : public Application {
 public:
     Shader shader{};
-    Texture texture{ "img1.png" };
+    Texture texture{ "assets/img1.png" };
     Camera cam;
     GLuint vao, vbo, ebo;
 
-    TestApp1() : Application("TestApp1", "3D Cubes and 3D Camera Example", { 800, 600, "3D Cube" }) {}
+    Cube3D() : Application("Cube3D", "{ \n3D Cubes and 3D Camera Example \nuse WASD for moving camera and \nuse arrow keys to change direction \n}", { 800, 600, "Cube 3D" }) {}
     std::string status;
     void initialize() {
         cam.initialize();
@@ -203,8 +202,8 @@ public:
     }
 };
 
-int main() {
-    TestApp1 app;
-    app.start();
+int main(int* argc,char* argv) {
+    Cube3D Pong;
+    Pong.start();
     return 0;
 }

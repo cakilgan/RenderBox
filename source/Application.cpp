@@ -12,17 +12,18 @@ void CALLBACK_ERROR(int error, const char* description) {
 	std::cerr << "GLFW Error (" << error << "): " << description << std::endl;
 }
 void CALLBACK_FRAMEBUFFER(GLFWwindow* window, int width, int height) {
+    addLog("resizing to "+std::to_string(width)+" "+std::to_string(height));
     glViewport(0, 0, width, height);  
 }
 bool pressKeys[500]{false};
 bool releaseKeys[500]{ false };
 void CALLBACK_KEYBOARD(GLFWwindow* window, int key, int scancode, int action, int mods){
-    Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-    if (app) {
+    Application* Pong = static_cast<Application*>(glfwGetWindowUserPointer(window));
+    if (Pong) {
         KeyEvent event{};
         event.actionCode = action;
         event.keyCode = key;
-        app->dispatch(event);
+        Pong->dispatch(event);
     }
     if (action==GLFW_PRESS)
     {
@@ -73,10 +74,6 @@ void Application::init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); 
-#endif
 
     APP_GLFW_WINDOW = glfwCreateWindow(APP_CONFIG.width, APP_CONFIG.height, APP_CONFIG.title.c_str(), nullptr, nullptr);
     if (!APP_GLFW_WINDOW) {
@@ -167,11 +164,11 @@ void setStatus(std::string msg)
 {
     statusLog = msg;
 }
+    double temp_fps = 0.0;
 void Application::loop() {
-    Timer fpsTimer,scrollbackTimer;
+    GLFWTimer fpsTimer,scrollbackTimer;
     fpsTimer.reset();
     scrollbackTimer.reset();
-    double temp_fps = 0.0;
     double currentTime=0.0,previous = 0.0,elapsed=0.0;
     int logLines = 0;
     bool printedOnce = false;
@@ -182,24 +179,20 @@ void Application::loop() {
         APP_DYNAMIC.delta_time = elapsed;
         APP_DYNAMIC.fps = 1.0f / (elapsed);
         update(elapsed);
-        if (fpsTimer.hasPassed(1))
-        {
+        TimeUtils::hook_staticGLFW<1>(1.0f, [this](GLFWTimer* timer) {
             temp_fps = APP_DYNAMIC.fps;
-            fpsTimer.reset();
-        }
+            timer->reset();
+            });
         double localElapsed = glfwGetTime()-APP_DYNAMIC.localtime;
 
-        // 1. Önce kaç satır bastığını hesapla
         int lineCount = std::count(statusLog.begin(), statusLog.end(), '\n') + 1;
 
-        // 2. Satırları temizle
         for (int i = 0; i < lineCount; ++i) {
-            std::cout << "\33[2K\r";      // satırı temizle
+            std::cout << "\33[2K\r";      
             if (i < lineCount - 1)
-                std::cout << "\x1b[1A";   // yukarı git (sonda değilse)
+                std::cout << "\x1b[1A";   
         }
 
-        // 3. Şimdi yeni içeriği yaz
         clearScreen();
         printLogBuffer();
         std::cout << "STATE[" << parseState(APP_STATE) << "] "
@@ -208,17 +201,15 @@ void Application::loop() {
             << statusLog
             <<"\n}"
             << std::flush;
-        if (APP_STATE != AppState::RUN) {
-            clearScreen();
-            printAllHistory();
-            std::cout << std::endl;
-        }
     }
 }
 void Application::dispose() {
     glfwDestroyWindow(APP_GLFW_WINDOW);
     glfwTerminate();
     destroy();
+    clearScreen();
+    printAllHistory();
+    std::cout << std::endl;
     std::cout << "}";
 }
 void Application::start() {

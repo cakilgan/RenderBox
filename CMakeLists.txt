@@ -28,7 +28,7 @@ add_library(core
     source/Application.cpp
     source/Camera.cpp
     source/Utils.cpp
-    source/ShaderCoder.cpp
+    
 )
 target_include_directories(core PRIVATE
         ${GLM_DIR}
